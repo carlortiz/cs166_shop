@@ -1,0 +1,6 @@
+service_request_id,service_date,problem,odometer_reading,is_closed,closed_date,comments,final_bill,vin,employee_id
+100,2024-01-10,Oil change,45000,false,,,,"VIN001",10
+101,2024-02-15,Brake replacement,30000,true,2024-02-16,Replaced brake pads,250.00,"VIN002",11
+102,2024-03-20,Transmission issue,48000,true,2024-03-25,Rebuilt transmission,1200.00,"VIN003",12
+103,2024-04-05,Engine noise,49000,false,,,,"VIN004",13
+104,2024-05-12,Battery replacement,10000,true,2024-05-12,Replaced battery,150.00,"VIN005",14

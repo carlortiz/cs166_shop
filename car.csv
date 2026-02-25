@@ -1,0 +1,6 @@
+vin,make,model,customer_id,year
+VIN001,Toyota,Camry,1,2010
+VIN002,Honda,Civic,2,2018
+VIN003,Ford,F150,3,1992
+VIN004,BMW,328i,4,1994
+VIN005,Tesla,Model3,5,2022

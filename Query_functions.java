@@ -7,7 +7,7 @@ public class Query_functions {
         try{
             String sql =
             "SELECT closed_date, comments, final_bill FROM service_request " +
-            "WHERE is_closed = 1 AND final_bill < 100";
+            "WHERE is_closed = true AND final_bill < 100";
             PreparedStatement stmt = conn.prepareStatement(sql);
             ResultSet rs = stmt.executeQuery();
             while(rs.next()){
@@ -50,7 +50,9 @@ public class Query_functions {
     }
 
     public static void customersMoreThan20Cars(Connection conn){
+
         try{
+
             String sql =
             "SELECT c.fname, c.lname, COUNT(*) AS num_cars " +
             "FROM customer c " +

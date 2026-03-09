@@ -1,25 +1,22 @@
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
         String url = "jdbc:postgresql://localhost:36238/corti001_shop";
         String user = "corti001";
-        String password = "";
+        String password = "Cc030503091101033017///";
 
-        try (
-            Connection conn = DriverManager.getConnection(url, user, password);
+        try(
+            Connection conn = DriverManager.getConnection(url,user,password);
             Scanner scanner = new Scanner(System.in);
-        ) {
+        ){
             System.out.println("Connected to database!");
             boolean running = true;
 
-            while (running) {
+            while(running){
                 System.out.println("\n===== Mechanics Shop Menu =====");
                 System.out.println("1. Add Customer");
                 System.out.println("2. Add Mechanic");
@@ -31,26 +28,44 @@ public class Main {
                 System.out.print("Choose option: ");
 
                 int choice = scanner.nextInt();
-                scanner.nextLine(); // consume newline
+                scanner.nextLine();
 
-                switch (choice) {
+                switch(choice){
                     case 1:
-                        System.out.println("Add Customer selected.");
+                        Add_functions.addCustomer(conn,scanner);
                         break;
                     case 2:
-                        System.out.println("Add Mechanic selected.");
+                        Add_functions.addMechanic(conn,scanner);
                         break;
                     case 3:
-                        System.out.println("Add Car selected.");
+                        Add_functions.addCar(conn,scanner);
                         break;
                     case 4:
-                        System.out.println("Initiate Service Request selected.");
+                        Add_functions.initiateServiceRequest(conn,scanner);
                         break;
                     case 5:
-                        System.out.println("Close Service Request selected.");
+                        Add_functions.closeServiceRequest(conn,scanner);
                         break;
                     case 6:
-                        System.out.println("Reports selected.");
+                        System.out.println("\nClosed requests with final bill less than 100:");
+                        Query_functions.closedRequests(conn);
+
+                        System.out.println("\nCustomers who paid less than 100:");
+                        Query_functions.customersLessThan100(conn);
+
+                        System.out.println("\nCustomers with more than 20 cars:");
+                        Query_functions.customersMoreThan20Cars(conn);
+
+                        System.out.println("\nCars built before 1995 with less than 50000 miles:");
+                        Query_functions.carsBefore1995(conn);
+
+                        System.out.print("\nEnter k for top cars with most open service requests: ");
+                        int k = scanner.nextInt();
+                        scanner.nextLine();
+                        Query_functions.topKCars(conn,k);
+
+                        System.out.println("\nCustomers ordered by total bill:");
+                        Query_functions.customersTotalBill(conn);
                         break;
                     case 0:
                         running = false;
@@ -60,42 +75,8 @@ public class Main {
                         System.out.println("Invalid option.");
                 }
             }
-
-        } catch (SQLException e) {
+        }catch(SQLException e){
             e.printStackTrace();
         }
     }
-}
-
-// initiate a service request
-public static void initiateServiceRequest(Connection conn, Scanner scanner)
-{
-    System.out.print("Enter last name: ");
-    String lastName = scanner.nextLine();
-
-    String findCustomersByLastName = "SELECT * FROM customer where lastName = ?";
-    PreparedStatement stmt = conn.prepareStatement(sql);
-    stmt.setString(1, lastName);
-    ResultSet rs = stmt.executeQuery();
-
-    // 3. Handle multiple matches
-    if ()
-
-    // 4. Handle no matches
-    // 5. Select or add car
-    // 6. Insert service_request
-    
-}
-
-// close a service request
-public static void closeServiceRequest(Connection conn, Scanner scanner)
-{
-    // TODO:
-    // 1. Ask for service_request_id
-    // 2. Ask for employee_id
-    // 3. Validate request exists
-    // 4. Validate mechanic exists
-    // 5. Validate dates
-    // 6. Update service_request as closed
-    
 }

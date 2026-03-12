@@ -1,5 +1,4 @@
 import java.sql.*;
-import java.util.ArrayList;
 
 public class Query_functions {
 
@@ -20,31 +19,6 @@ public class Query_functions {
 
         }catch(SQLException e){
             System.out.println("Error retrieving requests");
-            e.printStackTrace();
-        }
-    }
-
-    public static void customersLessThan100(Connection conn){
-        try{
-            String sql =
-            "SELECT DISTINCT c.fname, c.lname " +
-            "FROM customer c " +
-            "JOIN car ca ON c.id = ca.customer_id " +
-            "JOIN service_request sr ON ca.vin = sr.vin " +
-            "WHERE sr.final_bill < 100";
-
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            ResultSet rs = stmt.executeQuery();
-
-            while(rs.next()){
-                System.out.println(
-                    rs.getString("fname") + " " +
-                    rs.getString("lname")
-                );
-            }
-
-        }catch(SQLException e){
-            System.out.println("Error retrieving customers");
             e.printStackTrace();
         }
     }

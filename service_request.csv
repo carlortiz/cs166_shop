@@ -1,6 +1,16 @@
 service_request_id,service_date,problem,odometer_reading,is_closed,closed_date,comments,final_bill,vin,employee_id
-100,2024-01-10,Oil change,45000,false,,,,"VIN001",10
-101,2024-02-15,Brake replacement,30000,true,2024-02-16,Replaced brake pads,250.00,"VIN002",11
-102,2024-03-20,Transmission issue,48000,true,2024-03-25,Rebuilt transmission,1200.00,"VIN003",12
-103,2024-04-05,Engine noise,49000,false,,,,"VIN004",13
-104,2024-05-12,Battery replacement,10000,true,2024-05-12,Replaced battery,150.00,"VIN005",14
+1,2024-01-10,Oil change,45000,true,2024-01-11,Quick service,50,VIN001,1
+2,2024-02-15,Brake pads,60000,true,2024-02-16,Replaced pads,120,VIN002,2
+3,2024-03-12,Battery replacement,30000,true,2024-03-13,Battery replaced,80,VIN003,3
+4,2024-04-10,Inspection,20000,true,2024-04-10,All good,40,VIN007,1
+5,2024-05-05,Engine noise,70000,false,2024-05-05,Open request,0,VIN004,2
+6,2024-05-07,Oil change,15000,true,2024-05-07,Completed,60,VIN005,3
+7,2024-06-01,Tire replacement,40000,true,2024-06-02,Tires replaced,300,VIN006,4
+8,2024-06-10,Check engine light,48000,true,2024-06-11,Sensor replaced,90,VIN001,2
+9,2024-07-01,Oil change,20000,true,2024-07-01,Completed,70,VIN001,3
+10,2024-07-10,Transmission issue,90000,false,2024-07-10,Open request,0,VIN004,1
+11,2024-07-20,Inspection,35000,true,2024-07-20,All ok,30,VIN002,4
+12,2024-08-02,Oil change,25000,true,2024-08-02,Completed,55,VIN003,1
+13,2024-08-15,Engine check,49000,true,2024-08-16,Minor repair,95,VIN007,2
+14,2024-08-20,Oil change,10000,false,2024-08-20,Open request,0,VIN009,3
+15,2024-09-01,Brake replacement,30000,true,2024-09-02,Completed,200,VIN010,4

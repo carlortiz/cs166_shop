@@ -1,6 +1,6 @@
 employee_id,fname,lname,years_of_experience,vin
-10,Alice,Wilson,5,VIN001
-11,Bob,Martinez,10,VIN002
-12,David,Anderson,3,VIN003
-13,Sarah,Thomas,8,VIN004
-14,Kevin,White,12,VIN005
+1,Mark,Garcia,10,VIN001
+2,Luke,Martinez,7,VIN002
+3,Anna,Rodriguez,12,VIN003
+4,Paul,Lopez,5,VIN004
+5,David,Clark,8,VIN056

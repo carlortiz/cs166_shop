@@ -75,9 +75,7 @@ public class Add_functions {
     }
 
     public static void addMechanic(Connection conn, Scanner scanner){
-
         try{
-
             System.out.println("Employee ID:");
             int id = scanner.nextInt();
             scanner.nextLine();
@@ -114,13 +112,14 @@ public class Add_functions {
 
             System.out.println("Years Experience:");
             int exp = scanner.nextInt();
+            scanner.nextLine();
 
             if(exp < 0){
                 System.out.println("Error: Experience cannot be negative");
                 return;
             }
 
-            String sql = "INSERT INTO mechanic(employee_id,fname,lname,years_of_experience) VALUES(?,?,?,?)";
+            String sql = "INSERT INTO mechanic(employee_id,fname,lname,years_of_experience,vin) VALUES(?,?,?,?,?)";
 
             PreparedStatement stmt = conn.prepareStatement(sql);
 
@@ -128,6 +127,7 @@ public class Add_functions {
             stmt.setString(2,fname);
             stmt.setString(3,lname);
             stmt.setInt(4,exp);
+            stmt.setNull(5, java.sql.Types.VARCHAR);
 
             stmt.executeUpdate();
 
@@ -220,231 +220,268 @@ public class Add_functions {
 
     public static void initiateServiceRequest(Connection conn, Scanner scanner){
         try{
-            System.out.print("Enter last name: ");
+            System.out.print("enter last name: ");
             String lastName = scanner.nextLine();
 
             String query = "SELECT * FROM customer WHERE lname = ?";
-            PreparedStatement statement = conn.prepareStatement(query); // prepares sql query with a placeholder (?) so we can safely insert user input
-            statement.setString(1,lastName); // replaces the ? in the sql query with the last name entered by the user
-            ResultSet result = statement.executeQuery(); // executes the query and returns the matching rows from the database
+            PreparedStatement statement = conn.prepareStatement(query); // prepares a query to search for customers with the entered last name
+            statement.setString(1,lastName); // inserts the last name into the query
+            ResultSet result = statement.executeQuery(); // runs the query and returns matching customers
 
-            ArrayList<Integer> ids = new ArrayList<Integer>(); // stores the customer ids we find so we can let the user choose one later
+            ArrayList<Integer> ids = new ArrayList<Integer>(); // stores customer ids so the user can choose one later
             int count = 0;
 
-            while(result.next()){ // loops through each row returned from the query
-                int id = result.getInt("id"); // gets the id column from the current row
-                String lname = result.getString("lname"); // gets the lname column from the current row
+            while(result.next()){ // loops through all matching customers
+                int id = result.getInt("id"); // gets the customer id from the current row
+                String lname = result.getString("lname"); // gets the last name
 
                 count++;
-                ids.add(id); // saves the id into the list so we can retrieve it by index later
+                ids.add(id); // saves the id into the array list
 
                 System.out.println(count + ". " + lname + " (id " + id + ")");
             }
 
             int customerId;
+
             if(count == 0){
-                System.out.println("No customers found.");
-                System.out.print("Add new customer? (y/n): ");
+                System.out.println("no customers found.");
+                System.out.print("add new customer? (y/n): ");
                 String answer = scanner.nextLine();
 
-                if(answer.equalsIgnoreCase("y")){ // checks user input ignoring uppercase/lowercase
-                    addCustomer(conn,scanner); // calls helper function that inserts a new customer into the database
+                if(answer.equalsIgnoreCase("y")){
+                    addCustomer(conn,scanner); // calls the helper function to add a new customer
 
-                    System.out.print("Enter id of new customer: ");
+                    System.out.print("enter id of new customer: ");
                     customerId = scanner.nextInt();
                     scanner.nextLine();
                 }else{
-                    System.out.println("Cancelled.");
-                    return; // exits the function early if the user cancels
+                    System.out.println("cancelled.");
+                    return; // exits if the user chooses not to add a customer
                 }
             }else if(count == 1){
-                customerId = ids.get(0); // automatically selects the only customer found
+                customerId = ids.get(0); // automatically chooses the only matching customer
             }else{
-                System.out.print("Choose customer number: ");
+                System.out.print("choose customer number: ");
                 int choice = scanner.nextInt();
                 scanner.nextLine();
 
-                customerId = ids.get(choice - 1); // converts the displayed number into the correct array index
+                if(choice < 1 || choice > count){
+                    System.out.println("invalid customer choice.");
+                    return;
+                }
+
+                customerId = ids.get(choice - 1); // converts the displayed number into the correct index
             }
 
-            System.out.println("Selected customer id: " + customerId);
+            System.out.println("selected customer id: " + customerId);
 
             String carQuery = "SELECT * FROM car WHERE customer_id = ?";
-            PreparedStatement carStatement = conn.prepareStatement(carQuery); // prepares query to find cars owned by the selected customer
-            carStatement.setInt(1,customerId); // inserts the selected customer id into the query
-            ResultSet carResult = carStatement.executeQuery(); // executes query and returns all cars belonging to that customer
+            PreparedStatement carStatement = conn.prepareStatement(carQuery); // prepares a query to find all cars owned by the selected customer
+            carStatement.setInt(1,customerId); // inserts the selected customer id
+            ResultSet carResult = carStatement.executeQuery(); // runs the query and returns the customer's cars
 
-            ArrayList<String> vins = new ArrayList<String>(); // stores car vins so user can choose one
+            ArrayList<String> vins = new ArrayList<String>(); // stores vins so the user can choose a car
             int carCount = 0;
 
-            while(carResult.next()){ // loops through each car found for the customer
-                String vin = carResult.getString("vin"); // retrieves vin from row
-                String make = carResult.getString("make"); // retrieves make
-                String model = carResult.getString("model"); // retrieves model
-                int year = carResult.getInt("year"); // retrieves year
+            while(carResult.next()){ // loops through all cars owned by the customer
+                String vin = carResult.getString("vin"); // gets the vin
+                String make = carResult.getString("make"); // gets the make
+                String model = carResult.getString("model"); // gets the model
+                int year = carResult.getInt("year"); // gets the year
 
                 carCount++;
-                vins.add(vin); // saves vin so we can reference it later when user chooses a car
+                vins.add(vin); // saves the vin for later selection
 
                 System.out.println(carCount + ". " + year + " " + make + " " + model + " (vin " + vin + ")");
             }
 
             String selectedVin;
+
             if(carCount == 0){
-                System.out.println("Customer has no cars.");
-                System.out.print("Add new car? (y/n): ");
+                System.out.println("customer has no cars.");
+                System.out.print("add new car? (y/n): ");
                 String answer = scanner.nextLine();
 
                 if(answer.equalsIgnoreCase("y")){
-                    addCar(conn,scanner); // calls helper function that inserts a new car into the database
+                    addCar(conn,scanner); // calls the helper function to add a new car
 
-                    System.out.print("Enter vin of new car: ");
+                    System.out.print("enter vin of new car: ");
                     selectedVin = scanner.nextLine();
                 }else{
-                    System.out.println("Cancelled.");
-                    return;
+                    System.out.println("cancelled.");
+                    return; // exits if the user chooses not to add a car
                 }
             }else if(carCount == 1){
-                selectedVin = vins.get(0); // automatically selects the only car
+                selectedVin = vins.get(0); // automatically chooses the only car
             }else{
-                System.out.print("Choose car number: ");
+                System.out.print("choose car number: ");
                 int choice = scanner.nextInt();
                 scanner.nextLine();
 
-                selectedVin = vins.get(choice - 1); // converts displayed number into correct array index
+                if(choice < 1 || choice > carCount){
+                    System.out.println("invalid car choice.");
+                    return;
+                }
+
+                selectedVin = vins.get(choice - 1); // converts the displayed number into the correct vin
             }
 
-            System.out.print("Enter service request id: ");
+            System.out.print("enter mechanic employee id: ");
+            int employeeId = scanner.nextInt();
+            scanner.nextLine();
+
+            String mechanicCheck = "SELECT vin FROM mechanic WHERE employee_id = ?";
+            PreparedStatement mechanicStmt = conn.prepareStatement(mechanicCheck); // prepares a query to check if the mechanic exists and to get their current assigned vin
+            mechanicStmt.setInt(1,employeeId); // inserts the mechanic id into the query
+            ResultSet mechanicRs = mechanicStmt.executeQuery(); // runs the query
+
+            if(!mechanicRs.next()){
+                System.out.println("error: mechanic does not exist");
+                return; // stops if the mechanic id is not found
+            }
+
+            String mechanicCurrentVin = mechanicRs.getString("vin"); // gets the vin currently assigned to the mechanic
+
+            if(mechanicCurrentVin != null && !mechanicCurrentVin.equals(selectedVin)){
+                System.out.println("error: mechanic is already assigned to another car");
+                return; // prevents a mechanic from being assigned to more than one different car at a time
+            }
+
+            System.out.print("enter service request id: ");
             int requestId = scanner.nextInt();
             scanner.nextLine();
 
             String checkRequest = "SELECT service_request_id FROM service_request WHERE service_request_id = ?";
-            PreparedStatement checkRequestStatement = conn.prepareStatement(checkRequest); // prepares query to check if request id already exists
-            checkRequestStatement.setInt(1,requestId); // inserts entered request id into query
-            ResultSet checkRequestResult = checkRequestStatement.executeQuery(); // runs query to check for duplicates
+            PreparedStatement checkRequestStatement = conn.prepareStatement(checkRequest); // prepares a query to make sure the request id does not already exist
+            checkRequestStatement.setInt(1,requestId); // inserts the request id
+            ResultSet checkRequestResult = checkRequestStatement.executeQuery(); // runs the query
 
-            if(checkRequestResult.next()){ // if a row exists then the id already exists
-                System.out.println("Service request id already exists.");
-                return;
+            if(checkRequestResult.next()){
+                System.out.println("service request id already exists.");
+                return; // stops if the request id is already being used
             }
 
-            System.out.print("Enter service date (YYYY-MM-DD): ");
+            System.out.print("enter service date (yyyy-mm-dd): ");
             String serviceDate = scanner.nextLine();
 
-            System.out.print("Enter problem description: ");
+            System.out.print("enter problem description: ");
             String problem = scanner.nextLine();
 
-            System.out.print("Enter odometer reading: ");
+            System.out.print("enter odometer reading: ");
             int odometer = scanner.nextInt();
             scanner.nextLine();
 
             if(odometer < 0){
-                System.out.println("Odometer reading cannot be negative.");
+                System.out.println("odometer reading cannot be negative.");
                 return;
             }
 
             String insert =
-            "INSERT INTO service_request (service_request_id, service_date, problem, odometer_reading, is_closed, vin) VALUES (?, ?, ?, ?, ?, ?)";
+            "INSERT INTO service_request (service_request_id, service_date, problem, odometer_reading, is_closed, vin, employee_id) VALUES (?, ?, ?, ?, ?, ?, ?)";
 
-            PreparedStatement insertStatement = conn.prepareStatement(insert); // prepares insert statement for new service request
-            insertStatement.setInt(1,requestId); // sets request id
-            insertStatement.setDate(2,java.sql.Date.valueOf(serviceDate)); // converts string date into sql date format
-            insertStatement.setString(3,problem); // sets problem description
-            insertStatement.setInt(4,odometer); // sets odometer value
-            insertStatement.setBoolean(5,false); // new requests start as not closed
-            insertStatement.setString(6,selectedVin); // links request to selected car vin
-            insertStatement.executeUpdate(); // executes the insert query
+            PreparedStatement insertStatement = conn.prepareStatement(insert); // prepares the insert statement for the new service request
+            insertStatement.setInt(1,requestId); // sets the request id
+            insertStatement.setDate(2,java.sql.Date.valueOf(serviceDate)); // converts the entered date string into an sql date
+            insertStatement.setString(3,problem); // sets the problem description
+            insertStatement.setInt(4,odometer); // sets the odometer reading
+            insertStatement.setBoolean(5,false); // marks the request as open when first created
+            insertStatement.setString(6,selectedVin); // links the request to the selected car
+            insertStatement.setInt(7,employeeId); // links the request to the selected mechanic
+            insertStatement.executeUpdate(); // inserts the new service request into the table
 
-            System.out.println("Service request created.");
+            String updateMechanic = "UPDATE mechanic SET vin = ? WHERE employee_id = ?";
+            PreparedStatement updateStmt = conn.prepareStatement(updateMechanic); // prepares an update so the mechanic is now marked as working on this car
+            updateStmt.setString(1,selectedVin); // assigns the selected car vin to the mechanic
+            updateStmt.setInt(2,employeeId); // chooses which mechanic to update
+            updateStmt.executeUpdate(); // runs the mechanic update
+
+            System.out.println("service request created.");
+        }catch(IllegalArgumentException e){
+            System.out.println("invalid date format. please use yyyy-mm-dd.");
         }catch(Exception e){
-            System.out.println("Error: " + e.getMessage()); // prints the error message if something goes wrong
+            System.out.println("error: " + e.getMessage());
         }
     }
 
+
     public static void closeServiceRequest(Connection conn, Scanner scanner){
         try{
-            System.out.print("Enter service request id: ");
+            System.out.print("enter service request id: ");
             int serviceRequestId = scanner.nextInt();
             scanner.nextLine();
 
-            System.out.print("Enter mechanic employee id: ");
-            int mechanicId = scanner.nextInt();
-            scanner.nextLine();
-
-            System.out.print("Enter closing date (YYYY-MM-DD): ");
+            System.out.print("enter closing date (yyyy-mm-dd): ");
             String closedDateInput = scanner.nextLine();
 
-            System.out.print("Enter closing comments: ");
+            System.out.print("enter closing comments: ");
             String comments = scanner.nextLine();
 
-            System.out.print("Enter final bill amount: ");
+            System.out.print("enter final bill amount: ");
             double finalBill = scanner.nextDouble();
             scanner.nextLine();
 
             if(finalBill < 0){
-                System.out.println("Final bill cannot be negative.");
-                return; // stops the method if the bill is invalid
+                System.out.println("final bill cannot be negative.");
+                return;
             }
 
-            java.sql.Date closedDate = java.sql.Date.valueOf(closedDateInput); // converts the user-entered string date into a sql date object
+            java.sql.Date closedDate = java.sql.Date.valueOf(closedDateInput); // converts the entered closing date string into an sql date
 
-            String findRequestSql = "SELECT service_date, is_closed FROM service_request WHERE service_request_id = ?";
-            PreparedStatement findRequestStmt = conn.prepareStatement(findRequestSql); // prepares query to find the service request
-            findRequestStmt.setInt(1,serviceRequestId); // inserts the entered request id into the query
-            ResultSet requestRs = findRequestStmt.executeQuery(); // executes query and returns the matching row
+            String findRequestSql =
+            "SELECT service_date, is_closed, employee_id FROM service_request WHERE service_request_id = ?";
+            PreparedStatement findRequestStmt = conn.prepareStatement(findRequestSql); // prepares a query to find the service request and retrieve its service date, closed status, and assigned mechanic
+            findRequestStmt.setInt(1,serviceRequestId); // inserts the entered service request id into the query
+            ResultSet requestRs = findRequestStmt.executeQuery(); // runs the query and returns the matching service request
 
-            if(!requestRs.next()){ // if no row exists then the request id was not found
-                System.out.println("Service request not found.");
-                return;
+            if(!requestRs.next()){
+                System.out.println("service request not found.");
+                return; // stops if the request id does not exist
             }
 
             java.sql.Date serviceDate = requestRs.getDate("service_date"); // gets the original service date from the database
             boolean isClosed = requestRs.getBoolean("is_closed"); // checks whether the request is already closed
+            int employeeId = requestRs.getInt("employee_id"); // retrieves the mechanic assigned to this request
 
             if(isClosed){
-                System.out.println("This service request is already closed.");
-                return;
+                System.out.println("this service request is already closed.");
+                return; // stops if the request was already closed earlier
             }
 
-            if(closedDate.before(serviceDate)){ // ensures closing date is not before the original service date
-                System.out.println("Closing date cannot be before the service date.");
-                return;
-            }
-
-            String findMechanicSql = "SELECT * FROM mechanic WHERE employee_id = ?";
-            PreparedStatement findMechanicStmt = conn.prepareStatement(findMechanicSql); // prepares query to verify the mechanic exists
-            findMechanicStmt.setInt(1,mechanicId); // inserts mechanic id into the query
-            ResultSet mechanicRs = findMechanicStmt.executeQuery(); // runs query to check for a matching mechanic
-
-            if(!mechanicRs.next()){ // if no row returned then mechanic id does not exist
-                System.out.println("Mechanic not found.");
-                return;
+            if(closedDate.before(serviceDate)){
+                System.out.println("closing date cannot be before the service date.");
+                return; // prevents invalid closing dates that occur before the service request date
             }
 
             String updateRequestSql =
             "UPDATE service_request " +
-            "SET is_closed = ?, closed_date = ?, comments = ?, final_bill = ?, employee_id = ? " +
-            "WHERE service_request_id = ?"; // sql update statement that closes the service request
+            "SET is_closed = ?, closed_date = ?, comments = ?, final_bill = ? " +
+            "WHERE service_request_id = ?";
 
-            PreparedStatement updateStatement = conn.prepareStatement(updateRequestSql); // prepares update query
-            updateStatement.setBoolean(1,true); // sets is_closed to true
-            updateStatement.setDate(2,closedDate); // sets closing date
-            updateStatement.setString(3,comments); // saves mechanic comments
-            updateStatement.setDouble(4,finalBill); // records final bill amount
-            updateStatement.setInt(5,mechanicId); // records which mechanic closed the request
-            updateStatement.setInt(6,serviceRequestId); // specifies which service request to update
+            PreparedStatement updateStatement = conn.prepareStatement(updateRequestSql); // prepares the update statement that marks the request as closed
+            updateStatement.setBoolean(1,true); // sets the request status to closed
+            updateStatement.setDate(2,closedDate); // stores the closing date
+            updateStatement.setString(3,comments); // stores the closing comments
+            updateStatement.setDouble(4,finalBill); // stores the final bill amount
+            updateStatement.setInt(5,serviceRequestId); // identifies which service request should be updated
 
-            int rowsUpdated = updateStatement.executeUpdate(); // executes update and returns number of rows changed
+            int rowsUpdated = updateStatement.executeUpdate(); // runs the update statement to close the request
 
-            if(rowsUpdated > 0){ // if at least one row changed then update succeeded
-                System.out.println("Service request closed successfully.");
-            }else{
-                System.out.println("Could not close service request.");
+            if(rowsUpdated <= 0){
+                System.out.println("could not close service request.");
+                return; // stops if the update failed and no rows were modified
             }
+
+            String clearMechanicSql = "UPDATE mechanic SET vin = NULL WHERE employee_id = ?";
+            PreparedStatement clearStmt = conn.prepareStatement(clearMechanicSql); // prepares an update to remove the mechanic's current car assignment
+            clearStmt.setInt(1,employeeId); // uses the mechanic retrieved from the service request
+            clearStmt.executeUpdate(); // clears the mechanic's vin so they are no longer assigned to a car
+
+            System.out.println("service request closed successfully.");
+
         }catch(SQLException e){
-            System.out.println("SQL Error: " + e.getMessage()); // catches database related errors
+            System.out.println("sql error: " + e.getMessage());
         }catch(IllegalArgumentException e){
-            System.out.println("Invalid date format. Please use YYYY-MM-DD."); // catches errors if date format cannot be converted
+            System.out.println("invalid date format. please use yyyy-mm-dd.");
         }
     }
 }
